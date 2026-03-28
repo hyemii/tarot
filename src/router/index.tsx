@@ -11,6 +11,7 @@ const LibraryPage = lazy(() => import('@/pages/Library/LibraryPage'));
 const CardDetailPage = lazy(() => import('@/pages/Library/CardDetailPage'));
 const ReadingPage = lazy(() => import('@/pages/Reading/ReadingPage'));
 const ReadingSessionPage = lazy(() => import('@/pages/Reading/ReadingSessionPage'));
+const ManualReadingPage = lazy(() => import('@/pages/Reading/ManualReadingPage'));
 const ReadingResultPage = lazy(() => import('@/pages/Reading/ReadingResultPage'));
 const ReadingHistoryPage = lazy(() => import('@/pages/Reading/ReadingHistoryPage'));
 const LearningPage = lazy(() => import('@/pages/Learning/LearningPage'));
@@ -54,6 +55,7 @@ export const router = createBrowserRouter([
       { path: 'library/:cardId',                  element: page(<CardDetailPage />) },
       { path: 'reading',                          element: page(<ReadingPage />) },
       { path: 'reading/session/:spreadId',        element: page(<ReadingSessionPage />) },
+      { path: 'reading/manual/:spreadId',         element: page(<ManualReadingPage />) },
       { path: 'reading/result/:sessionId',        element: page(<ReadingResultPage />) },
       { path: 'reading/history',                  element: page(<ReadingHistoryPage />) },
       { path: 'learning',                         element: page(<LearningPage />) },
