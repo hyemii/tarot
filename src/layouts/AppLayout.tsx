@@ -28,16 +28,18 @@ export function AppLayout() {
         maxWidth: 480,
         margin: '0 auto',
         position: 'relative',
+        // 상단 노치/상태바 영역을 피해 콘텐츠 시작점을 내림
+        paddingTop: 'env(safe-area-inset-top)',
       }}
     >
       <OfflineBanner />
 
-      {/* 페이지 콘텐츠 영역 — 하단 탭 높이만큼 패딩을 줘서 탭에 가려지지 않게 처리 */}
+      {/* 페이지 콘텐츠 영역 — 하단 탭(64px) + 홈 인디케이터 safe area만큼 패딩 */}
       <main
         style={{
           flex: 1,
           overflowY: 'auto',
-          paddingBottom: 64,
+          paddingBottom: 'calc(64px + env(safe-area-inset-bottom))',
         }}
       >
         <Outlet />
@@ -52,21 +54,22 @@ export function AppLayout() {
           transform: 'translateX(-50%)',
           width: '100%',
           maxWidth: 480,
-          height: 64,
+          // 탭 자체 높이에 홈 인디케이터 safe area를 더해 아이콘이 밀리지 않도록 함
+          height: 'calc(64px + env(safe-area-inset-bottom))',
           display: 'flex',
+          alignItems: 'flex-start', // 아이콘을 위쪽(탭 영역)에 정렬
           backgroundColor: '#1a0a2e',
           borderTop: '1px solid rgba(167,139,250,0.2)',
-          // iOS safe area를 고려하여 하단 패딩 적용
-          paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
         {TABS.map((tab) => (
           <NavLink
             key={tab.path}
             to={tab.path}
-            end={tab.path === '/'}  // 홈 탭은 정확한 경로 매칭
+            end={tab.path === '/'}
             style={({ isActive }) => ({
               flex: 1,
+              height: 64, // 실제 탭 터치 영역은 64px로 고정
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
