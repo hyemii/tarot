@@ -1,11 +1,12 @@
 // 리딩 세션 스토어 — 진행 중인 리딩의 상태(스프레드 선택 → 카드 드로우 → 결과)를 관리
 
-import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
-import type { ReadingSession, DrawnCard, TarotSpread } from '@/types/tarot';
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
+import { v4 as uuidV4 } from "uuid";
+import type { ReadingSession, DrawnCard, TarotSpread } from "@/types/tarot";
 
 // 리딩 진행 단계
-type ReadingPhase = 'idle' | 'drawing' | 'result';
+type ReadingPhase = "idle" | "drawing" | "result";
 
 interface ReadingStore {
   phase: ReadingPhase;
@@ -24,14 +25,14 @@ interface ReadingStore {
 
 export const useReadingStore = create<ReadingStore>()(
   immer((set, get) => ({
-    phase: 'idle',
+    phase: "idle",
     currentSpread: null,
-    question: '',
+    question: "",
     drawnCards: [],
 
     startReading: (spread, question) => {
       set((state) => {
-        state.phase = 'drawing';
+        state.phase = "drawing";
         state.currentSpread = spread;
         state.question = question;
         state.drawnCards = [];
@@ -42,8 +43,11 @@ export const useReadingStore = create<ReadingStore>()(
       set((state) => {
         state.drawnCards.push(card);
         // 스프레드의 모든 포지션이 채워지면 결과 화면으로 전환
-        if (state.currentSpread && state.drawnCards.length === state.currentSpread.cardCount) {
-          state.phase = 'result';
+        if (
+          state.currentSpread &&
+          state.drawnCards.length === state.currentSpread.cardCount
+        ) {
+          state.phase = "result";
         }
       });
     },
@@ -52,10 +56,12 @@ export const useReadingStore = create<ReadingStore>()(
       const { currentSpread, question, drawnCards } = get();
       // non-null assertion 대신 명시적 체크 — drawing 단계 이전에 buildSession이 호출되면 즉시 실패시켜 데이터 손상 방지
       if (!currentSpread) {
-        throw new Error('buildSession: currentSpread가 null입니다. 리딩이 시작되지 않은 상태입니다.');
+        throw new Error(
+          "buildSession: currentSpread가 null입니다. 리딩이 시작되지 않은 상태입니다.",
+        );
       }
       return {
-        id: crypto.randomUUID(),
+        id: uuidV4(),
         timestamp: Date.now(),
         savedAt: Date.now(),
         spreadId: currentSpread.id,
@@ -66,11 +72,11 @@ export const useReadingStore = create<ReadingStore>()(
 
     resetReading: () => {
       set((state) => {
-        state.phase = 'idle';
+        state.phase = "idle";
         state.currentSpread = null;
-        state.question = '';
+        state.question = "";
         state.drawnCards = [];
       });
     },
-  }))
+  })),
 );

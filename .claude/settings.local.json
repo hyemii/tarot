@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)",
+      "Bash(scp:*)",
+      "Bash(ssh:*)",
+      "Bash(curl:*)",
+      "Bash(npm run:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(xxd)",
+      "Bash(set -a)",
+      "Bash(source /Users/hyemiyu/Documents/projects/hmyu-tarot/.env)",
+      "Bash(set +a)",
+      "Bash(python3 -c \":*)",
+      "Bash(bash /Users/hyemiyu/Documents/oci/deploy.sh)",
+      "Bash(source .env)",
+      "Bash(bash -c 'set -a && source /Users/hyemiyu/Documents/projects/hmyu-tarot/.env && set +a && python3 /Users/hyemiyu/Documents/projects/hmyu-tarot/scripts/notion_logger.py')",
+      "Bash(python3 /tmp/hook_debug_response.py cat /tmp/hook_response_dump.txt)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /Users/hyemiyu/Documents/projects/hmyu-tarot && set -a && source .env && set +a && python3 scripts/notion_logger.py"
+          }
+        ]
+      }
+    ]
+  }
+}
