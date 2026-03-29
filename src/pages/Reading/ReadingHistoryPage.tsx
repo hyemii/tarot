@@ -19,9 +19,14 @@ export default function ReadingHistoryPage() {
   }, []);
 
   // 리딩 세션 삭제 후 목록 업데이트
+  // DB 삭제 실패 시 UI 상태를 업데이트하지 않아 화면과 DB 불일치를 방지
   async function handleDelete(sessionId: string) {
-    await readingRepository.delete(sessionId);
-    setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    try {
+      await readingRepository.delete(sessionId);
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    } catch (err) {
+      console.error('리딩 세션 삭제 실패:', err);
+    }
   }
 
   return (

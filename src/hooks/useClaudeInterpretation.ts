@@ -67,7 +67,9 @@ export function useClaudeInterpretation(): UseClaudeInterpretationReturn {
       setStatus('done');
     } catch (err) {
       // AbortError는 사용자가 의도적으로 취소한 경우이므로 에러로 처리하지 않고 idle로 복귀
+      // 이전 스트리밍 텍스트가 남아있는 채로 새 요청이 시작되는 것을 막기 위해 interpretation도 초기화
       if (err instanceof DOMException && err.name === 'AbortError') {
+        setInterpretation('');
         setStatus('idle');
         return;
       }

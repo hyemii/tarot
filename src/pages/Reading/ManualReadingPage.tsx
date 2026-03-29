@@ -165,10 +165,12 @@ export default function ManualReadingPage() {
                           <p style={{ fontSize: 14, color: 'white', fontWeight: 500 }}>{sel.card.koreanName}</p>
                           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{sel.card.englishName}</p>
 
-                          {/* 정방향/역방향 토글 */}
+                          {/* 정방향/역방향 토글 — 항상 toggleReversed를 호출하고, 활성 상태는 backgroundColor로만 표시
+                              이전 코드의 `!sel.isReversed || toggleReversed(...)` 단락 평가는
+                              이미 정방향인 상태에서 정방향 버튼을 다시 클릭해도 토글이 실행되지 않는 버그를 유발 */}
                           <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
                             <button
-                              onClick={() => !sel.isReversed || toggleReversed(pos.position)}
+                              onClick={() => toggleReversed(pos.position)}
                               style={{
                                 padding: '4px 10px',
                                 borderRadius: 20,
@@ -183,7 +185,7 @@ export default function ManualReadingPage() {
                               정방향
                             </button>
                             <button
-                              onClick={() => sel.isReversed || toggleReversed(pos.position)}
+                              onClick={() => toggleReversed(pos.position)}
                               style={{
                                 padding: '4px 10px',
                                 borderRadius: 20,

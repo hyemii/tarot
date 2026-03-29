@@ -61,15 +61,21 @@ export default function ReadingResultPage() {
   }, [session, spread, allCards]);
 
   // 노트 저장 — 기존 세션에 노트를 추가하고 DB에 반영
+  // finally로 isSavingNotes를 반드시 해제해 저장 실패 시 버튼이 영구 비활성화되는 것을 방지
   async function handleSaveNotes() {
     if (!session) return;
     setIsSavingNotes(true);
-    const updated = { ...session, userNotes: notes, savedAt: Date.now() };
-    await readingRepository.save(updated);
-    setSession(updated);
-    setIsSavingNotes(false);
-    setNotesSaved(true);
-    setTimeout(() => setNotesSaved(false), 2000);
+    try {
+      const updated = { ...session, userNotes: notes, savedAt: Date.now() };
+      await readingRepository.save(updated);
+      setSession(updated);
+      setNotesSaved(true);
+      setTimeout(() => setNotesSaved(false), 2000);
+    } catch (err) {
+      console.error('노트 저장 실패:', err);
+    } finally {
+      setIsSavingNotes(false);
+    }
   }
 
   return (

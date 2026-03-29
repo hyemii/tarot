@@ -50,11 +50,15 @@ export const useReadingStore = create<ReadingStore>()(
 
     buildSession: () => {
       const { currentSpread, question, drawnCards } = get();
+      // non-null assertion 대신 명시적 체크 — drawing 단계 이전에 buildSession이 호출되면 즉시 실패시켜 데이터 손상 방지
+      if (!currentSpread) {
+        throw new Error('buildSession: currentSpread가 null입니다. 리딩이 시작되지 않은 상태입니다.');
+      }
       return {
         id: crypto.randomUUID(),
         timestamp: Date.now(),
         savedAt: Date.now(),
-        spreadId: currentSpread!.id,
+        spreadId: currentSpread.id,
         question,
         cards: [...drawnCards],
       };
