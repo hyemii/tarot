@@ -2,6 +2,16 @@
 """
 Claude Code 에이전트 협업 로그를 Notion 데이터베이스에 기록.
 Claude Code 훅에서 stdin으로 JSON 페이로드를 받아 처리.
+
+tool_response 구조:
+  {
+    "status": "completed",
+    "content": [{"type": "text", "text": "..."}],
+    "totalTokens": 7877,
+    "totalDurationMs": 1864,
+    "totalToolUseCount": 0,
+    ...
+  }
 """
 
 import os
@@ -39,11 +49,23 @@ if tool_name != "Agent":
     sys.exit(0)
 
 tool_input = payload.get("tool_input", {})
-tool_response = payload.get("tool_response", "") or ""
+tool_response = payload.get("tool_response", {}) or {}
 
 agent_type = tool_input.get("subagent_type", "general-purpose")
 description = tool_input.get("description", "")
 prompt = tool_input.get("prompt", "")
+
+# tool_response에서 토큰 수와 텍스트 결과 추출
+# tool_response가 dict이면 구조화된 필드 사용, 문자열이면 그대로 사용
+if isinstance(tool_response, dict):
+    total_tokens = tool_response.get("totalTokens")
+    content_list = tool_response.get("content", [])
+    output_text = " ".join(
+        c.get("text", "") for c in content_list if c.get("type") == "text"
+    )
+else:
+    total_tokens = None
+    output_text = str(tool_response)
 
 
 def notion_request(method, path, body=None):
@@ -91,6 +113,7 @@ def get_or_create_database():
                 }
             },
             "시각": {"date": {}},
+            "토큰": {"number": {"format": "number_with_commas"}},
             "태스크": {"rich_text": {}},
             "결과 요약": {"rich_text": {}},
         },
@@ -104,33 +127,37 @@ def get_or_create_database():
     return None
 
 
-def add_entry(db_id, agent_type, description, task, output):
+def add_entry(db_id, agent_type, description, task, output, tokens):
     emoji = AGENT_EMOJI.get(agent_type, "🤖")
     now_iso = datetime.now(timezone.utc).isoformat()
+
+    task_str = task if isinstance(task, str) else json.dumps(task, ensure_ascii=False)
+
+    properties = {
+        "이름": {
+            "title": [{"type": "text", "text": {"content": description or "(설명 없음)"}}]
+        },
+        "에이전트": {"select": {"name": agent_type}},
+        "시각": {"date": {"start": now_iso}},
+        "태스크": {
+            "rich_text": [{"type": "text", "text": {"content": task_str[:2000]}}]
+        },
+        "결과 요약": {
+            "rich_text": [{"type": "text", "text": {"content": output[:2000]}}]
+        },
+    }
+
+    # 토큰 수가 있는 경우에만 기록
+    if tokens is not None:
+        properties["토큰"] = {"number": tokens}
 
     notion_request("POST", "/pages", {
         "parent": {"database_id": db_id},
         "icon": {"type": "emoji", "emoji": emoji},
-        "properties": {
-            "이름": {
-                "title": [{"type": "text", "text": {"content": description or "(설명 없음)"}}]
-            },
-            "에이전트": {
-                "select": {"name": agent_type}
-            },
-            "시각": {
-                "date": {"start": now_iso}
-            },
-            "태스크": {
-                "rich_text": [{"type": "text", "text": {"content": task[:2000]}}]
-            },
-            "결과 요약": {
-                "rich_text": [{"type": "text", "text": {"content": output[:2000]}}]
-            },
-        },
+        "properties": properties,
     })
 
 
 db_id = get_or_create_database()
 if db_id:
-    add_entry(db_id, agent_type, description, prompt, tool_response)
+    add_entry(db_id, agent_type, description, prompt, output_text, total_tokens)
