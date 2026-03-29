@@ -12,7 +12,14 @@ export default function ProfilePage() {
   const updateSettings = useUserStore((s) => s.updateSettings);
   const allCards = useAllCards();
 
-  if (!profile) return null;
+  // DBReadyGuard를 통과했어도 profile이 없는 경우 로딩 중으로 처리
+  if (!profile) {
+    return (
+      <div style={{ padding: 24, textAlign: 'center', color: 'rgba(255,255,255,0.4)', paddingTop: 80 }}>
+        프로필을 불러오는 중...
+      </div>
+    );
+  }
 
   // 학습 통계 계산
   const learnedEntries = Object.entries(profile.learnedCards);

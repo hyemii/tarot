@@ -13,7 +13,7 @@ export default defineConfig({
         runtimeCaching: [
           {
             // 타로 카드 이미지: 변경 빈도가 극히 낮으므로 Cache First 전략 사용
-            urlPattern: /\/images\/.*\.webp$/i,
+            urlPattern: /\/images\/.*\.(jpg|jpeg|webp|png)$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'tarot-card-images',

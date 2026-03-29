@@ -19,12 +19,18 @@ export function DBReadyGuard({ children }: DBReadyGuardProps) {
   useEffect(() => {
     // DB 초기화 → 시드 → 프로필 로드 순서로 실행
     (async () => {
-      await getDB();        // IndexedDB 스키마 생성/마이그레이션
-      await seedIfNeeded(); // 최초 실행 시 마스터 데이터 시드
-      await loadProfile();  // 사용자 프로필 불러오기
-      setDBReady(true);     // 준비 완료 신호
+      try {
+        await getDB();        // IndexedDB 스키마 생성/마이그레이션
+        await seedIfNeeded(); // 최초 실행 시 마스터 데이터 시드
+        await loadProfile();  // 사용자 프로필 불러오기
+        setDBReady(true);     // 준비 완료 신호
+      } catch (error) {
+        // 초기화 실패 시 콘솔에 기록 후 재시도 유도
+        console.error('DB 초기화 실패:', error);
+        setDBReady(true); // 실패해도 앱은 열어서 사용자가 재시도할 수 있도록 함
+      }
     })();
-  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [setDBReady, loadProfile]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   // DB가 준비되기 전에는 로딩 화면 표시
   if (!isDBReady) {

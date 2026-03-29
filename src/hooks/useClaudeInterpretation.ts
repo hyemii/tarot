@@ -66,8 +66,11 @@ export function useClaudeInterpretation(): UseClaudeInterpretationReturn {
       }
       setStatus('done');
     } catch (err) {
-      // AbortError는 사용자가 의도적으로 취소한 경우이므로 에러로 처리하지 않음
-      if (err instanceof DOMException && err.name === 'AbortError') return;
+      // AbortError는 사용자가 의도적으로 취소한 경우이므로 에러로 처리하지 않고 idle로 복귀
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setStatus('idle');
+        return;
+      }
 
       const message = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
       setError(message);
