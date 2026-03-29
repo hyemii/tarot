@@ -22,6 +22,7 @@ export default function ReadingSessionPage() {
 
   const [question, setQuestion] = useState('');
   const [flippedPositions, setFlippedPositions] = useState<Set<number>>(new Set());
+  const [isSaving, setIsSaving] = useState(false);
 
   // 셔플된 덱 — 매 세션마다 새로 섞음
   const shuffledDeck = useMemo(() => shuffleDeck(allCards), [allCards]);
@@ -203,10 +204,18 @@ export default function ReadingSessionPage() {
   // 결과 단계 — 리딩 세션을 저장하고 결과 페이지로 이동
   if (phase === 'result') {
     const handleSave = async () => {
-      const session = buildSession();
-      await readingRepository.save(session);
-      resetReading();
-      navigate(`/reading/result/${session.id}`, { replace: true });
+      if (isSaving) return; // 중복 클릭 방지
+      setIsSaving(true);
+      try {
+        const session = buildSession();
+        await readingRepository.save(session);
+        // navigate 먼저 실행 후 상태 초기화 — 순서 반전 시 컴포넌트가 idle로 재렌더되는 문제 방지
+        navigate(`/reading/result/${session.id}`, { replace: true });
+        resetReading();
+      } catch (err) {
+        console.error('리딩 저장 실패:', err);
+        setIsSaving(false);
+      }
     };
 
     return (
@@ -220,18 +229,19 @@ export default function ReadingSessionPage() {
         </p>
         <button
           onClick={handleSave}
+          disabled={isSaving}
           style={{
             padding: '14px 32px',
             borderRadius: 12,
             border: 'none',
-            backgroundColor: '#7c3aed',
+            backgroundColor: isSaving ? '#4c1d95' : '#7c3aed',
             color: 'white',
             fontSize: 16,
             fontWeight: 600,
-            cursor: 'pointer',
+            cursor: isSaving ? 'not-allowed' : 'pointer',
           }}
         >
-          결과 보기
+          {isSaving ? '저장 중...' : '결과 보기'}
         </button>
       </div>
     );
