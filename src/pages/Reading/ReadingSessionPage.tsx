@@ -209,11 +209,12 @@ export default function ReadingSessionPage() {
       try {
         const session = buildSession();
         await readingRepository.save(session);
-        // navigate 먼저 실행 후 상태 초기화 — 순서 반전 시 컴포넌트가 idle로 재렌더되는 문제 방지
+        resetReading(); // navigate 전에 호출하여 언마운트 후 상태 업데이트 방지
         navigate(`/reading/result/${session.id}`, { replace: true });
-        resetReading();
       } catch (err) {
         console.error('리딩 저장 실패:', err);
+        alert('저장 중 오류가 발생했습니다. 다시 시도해주세요.');
+      } finally {
         setIsSaving(false);
       }
     };
